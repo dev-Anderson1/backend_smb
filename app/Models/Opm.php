@@ -16,4 +16,8 @@ class Opm extends Model
     {
         return $this->hasMany(User::class);
     }
+    public function user()
+    {
+        return $this->hasMany(User::class);
+    }
 }
