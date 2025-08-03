@@ -8,8 +8,20 @@ on:
 
 jobs:
   laravel-tests:
-
     runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_DATABASE: smb
+          MYSQL_ROOT_PASSWORD: ab3@
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
 
     steps:
     - uses: actions/checkout@v4
@@ -30,20 +42,25 @@ jobs:
     - name: Set directory permissions
       run: chmod -R 777 storage bootstrap/cache
 
-    - name: Prepare SQLite database
+    - name: Wait for MySQL
       run: |
-        mkdir -p database
-        touch database/database.sqlite
+        sudo apt-get install -y mysql-client
+        until mysql -h 127.0.0.1 -P 3306 -u root -p'ab3@' -e 'SHOW DATABASES;'; do
+          echo "Aguardando MySQL subir..."
+          sleep 5
+        done
 
-    - name: Cache config and routes
-      run: |
-        php artisan config:cache
-        php artisan route:cache
+    - name: Run migrations (caso tenha)
+      run: php artisan migrate --force
 
     - name: Run tests
       env:
+        DB_CONNECTION: mysql
+        DB_HOST: 127.0.0.1
+        DB_PORT: 3306
+        DB_DATABASE: smb
+        DB_USERNAME: root
+        DB_PASSWORD: ab3@
         APP_ENV: testing
         APP_DEBUG: true
-        DB_CONNECTION: sqlite
-        DB_DATABASE: database/database.sqlite
       run: php artisan test
