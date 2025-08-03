@@ -6,22 +6,27 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn([
-                'colete_id',
-                'espada_id',
-                'algema_id',
-                'arma_id',
-                'outros_materiais',
-            ]);
+            if (Schema::hasColumn('users', 'colete_id')) {
+                $table->dropColumn('colete_id');
+            }
+            if (Schema::hasColumn('users', 'espada_id')) {
+                $table->dropColumn('espada_id');
+            }
+            if (Schema::hasColumn('users', 'algema_id')) {
+                $table->dropColumn('algema_id');
+            }
+            if (Schema::hasColumn('users', 'arma_id')) {
+                $table->dropColumn('arma_id');
+            }
+            if (Schema::hasColumn('users', 'outros_materiais')) {
+                $table->dropColumn('outros_materiais');
+            }
         });
     }
-    
+
     public function down()
     {
         Schema::table('users', function (Blueprint $table) {
@@ -32,5 +37,4 @@ return new class extends Migration
             $table->text('outros_materiais')->nullable();
         });
     }
-    
 };

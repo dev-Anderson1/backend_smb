@@ -6,20 +6,19 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up()
     {
         Schema::table('armas', function (Blueprint $table) {
-            $table->dropColumn('name');
+            if (Schema::hasColumn('armas', 'name')) {
+                $table->dropColumn('name');
+            }
         });
     }
     
     public function down()
     {
         Schema::table('armas', function (Blueprint $table) {
-            $table->string('name')->nullable(); // caso precise voltar
+            $table->string('name')->nullable();
         });
     }
 };
