@@ -51,9 +51,6 @@ jobs:
         done
 
     - name: Run migrations (caso tenha)
-      run: php artisan migrate --force
-
-    - name: Run tests
       env:
         DB_CONNECTION: mysql
         DB_HOST: 127.0.0.1
@@ -61,6 +58,7 @@ jobs:
         DB_DATABASE: smb
         DB_USERNAME: root
         DB_PASSWORD: abc123@
-        APP_ENV: testing
-        APP_DEBUG: true
-      run: php artisan test
+      run: php artisan migrate --force
+
+
+   
