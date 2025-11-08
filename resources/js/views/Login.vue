@@ -1,64 +1,58 @@
 <template>
-  <div class="login py-10 px-4 flex justify-center">
-    <form @submit.prevent="handleSubmit" class="w-full max-w-md space-y-4">
-      <h2 class="text-2xl font-bold">Login</h2>
-
-      <!-- Erro global -->
-      <p
-        v-if="formError"
-        class="text-sm text-red-600 bg-red-50 border border-red-200 rounded p-2"
-        role="alert"
-      >
+  <div style="min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; padding: 20px;">
+    <div style="background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); width: 100%; max-width: 400px;">
+      <h1 style="text-align: center; margin-bottom: 30px; color: #333;">Login</h1>
+      
+      <div v-if="formError" style="background: #fee; border: 1px solid #fcc; color: #c33; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
         {{ formError }}
-      </p>
-
-      <div>
-        <label for="email" class="block text-gray-700">Email</label>
-        <input
-          type="email"
-          id="email"
-          v-model.trim="email"
-          required
-          autocomplete="email"
-          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          :class="{'border-red-500': emailError}"
-        />
-        <small v-if="emailError" class="text-red-600">{{ emailError }}</small>
       </div>
 
-      <div>
-        <label for="password" class="block text-gray-700">Senha</label>
-        <div class="mt-1 relative">
-          <input
-            :type="showPassword ? 'text' : 'password'"
-            id="password"
-            v-model="password"
+      <form @submit.prevent="handleSubmit">
+        <div style="margin-bottom: 20px;">
+          <label style="display: block; margin-bottom: 8px; font-weight: bold; color: #555;">Email:</label>
+          <input 
+            type="email" 
+            v-model="email" 
             required
-            autocomplete="current-password"
-            class="block w-full rounded-md border-gray-300 shadow-sm pr-10 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            :class="{'border-red-500': passwordError}"
+            style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px;"
+            :style="{ borderColor: emailError ? '#f56565' : '#ddd' }"
           />
-          <button
-            type="button"
-            class="absolute inset-y-0 right-0 px-3 text-gray-500 hover:text-gray-700"
-            @click="showPassword = !showPassword"
-            :aria-label="showPassword ? 'Ocultar senha' : 'Mostrar senha'"
-          >
-            {{ showPassword ? 'Ocultar' : 'Mostrar' }}
-          </button>
+          <div v-if="emailError" style="color: #f56565; font-size: 14px; margin-top: 5px;">
+            {{ emailError }}
+          </div>
         </div>
-        <small v-if="passwordError" class="text-red-600">{{ passwordError }}</small>
-      </div>
 
-      <button
-        type="submit"
-        class="w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-60"
-        :disabled="loading"
-        :aria-busy="loading ? 'true' : 'false'"
-      >
-        {{ loading ? 'Entrando...' : 'Entrar' }}
-      </button>
-    </form>
+        <div style="margin-bottom: 25px;">
+          <label style="display: block; margin-bottom: 8px; font-weight: bold; color: #555;">Senha:</label>
+          <input 
+            :type="showPassword ? 'text' : 'password'"
+            v-model="password" 
+            required
+            style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px;"
+            :style="{ borderColor: passwordError ? '#f56565' : '#ddd' }"
+          />
+          <button 
+            type="button" 
+            @click="showPassword = !showPassword"
+            style="margin-top: 5px; background: none; border: none; color: #667eea; cursor: pointer; font-size: 14px;"
+          >
+            {{ showPassword ? 'Ocultar' : 'Mostrar' }} senha
+          </button>
+          <div v-if="passwordError" style="color: #f56565; font-size: 14px; margin-top: 5px;">
+            {{ passwordError }}
+          </div>
+        </div>
+
+        <button 
+          type="submit" 
+          :disabled="loading"
+          style="width: 100%; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer;"
+          :style="{ opacity: loading ? 0.6 : 1 }"
+        >
+          {{ loading ? 'Entrando...' : 'Entrar' }}
+        </button>
+      </form>
+    </div>
   </div>
 </template>
 
@@ -66,11 +60,13 @@
 import { ref } from 'vue'
 import { useStore } from 'vuex'
 import { useRouter, useRoute } from 'vue-router'
+import api from '@/services/api'
 
-const store = useStore()
 const router = useRouter()
 const route = useRoute()
+const store = useStore()
 
+// state
 const email = ref('')
 const password = ref('')
 const loading = ref(false)
@@ -79,50 +75,70 @@ const emailError = ref('')
 const passwordError = ref('')
 const showPassword = ref(false)
 
+// validação simples
 const validate = () => {
   emailError.value = ''
   passwordError.value = ''
   formError.value = ''
 
-  // validação bem simples
-  const emailOk = /\S+@\S+\.\S+/.test(email.value)
-  if (!emailOk) emailError.value = 'Informe um e-mail válido.'
-
-  if (!password.value || password.value.length < 6) {
-    passwordError.value = 'A senha deve ter pelo menos 6 caracteres.'
+  let ok = true
+  if (!email.value) {
+    emailError.value = 'Email é obrigatório.'
+    ok = false
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
+    emailError.value = 'Email inválido.'
+    ok = false
   }
 
-  return !emailError.value && !passwordError.value
+  if (!password.value) {
+    passwordError.value = 'Senha é obrigatória.'
+    ok = false
+  } else if (password.value.length < 6) {
+    passwordError.value = 'Senha deve ter pelo menos 6 caracteres.'
+    ok = false
+  }
+
+  return ok
 }
 
 const handleSubmit = async () => {
-  if (!validate()) return
-  loading.value = true
-  formError.value = ''
-
   try {
-    await store.dispatch('login', {
+    if (!validate()) return
+    loading.value = true
+    formError.value = ''
+
+    const { data } = await api.post('/login', {
       email: email.value,
       password: password.value
     })
 
-    // se tiver ?redirect=/rota, usa; senão vai para dashboard
+    if (!data?.success) {
+      formError.value = data?.message || 'Credenciais inválidas.'
+      return
+    }
+
+    // Atualiza Vuex + localStorage
+    store.commit('auth/setToken', data.token)
+    store.commit('auth/setUser',  data.user)
+    localStorage.setItem('token', data.token)
+    localStorage.setItem('user', JSON.stringify(data.user))
+
+    // Redireciona (ajuste o name/path conforme seu router)
     const redirect = route.query.redirect || '/'
-    router.push(String(redirect))
-  } catch (err) {
-    // tente capturar mensagem da API (Laravel)
-    formError.value =
-      err?.response?.data?.message ||
-      err?.message ||
-      'Não foi possível entrar. Verifique suas credenciais.'
+    await router.replace(redirect)
+  } catch (error) {
+    console.error('Erro no login:', {
+      message: error?.message,
+      code: error?.code,
+      url: error?.config?.baseURL + (error?.config?.url || ''),
+      status: error?.response?.status,
+      data: error?.response?.data,
+    })
+    formError.value = error?.response?.data?.message || 'Erro de conexão. Tente novamente.'
   } finally {
     loading.value = false
   }
 }
 </script>
 
-<style scoped>
-/* opcional: centralizar verticalmente se quiser
-.login { min-height: calc(100vh - 4rem); }
-*/
-</style>
+

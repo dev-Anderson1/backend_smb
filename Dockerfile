@@ -1,4 +1,4 @@
-FROM php:8.1-fpm
+FROM php:8.2-fpm
 
 # Instalar dependências do sistema e Node.js 20.x via NodeSource
 RUN apt-get update && apt-get install -y curl zip unzip git libpng-dev libjpeg-dev libonig-dev libxml2-dev libzip-dev \

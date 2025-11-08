@@ -28,10 +28,11 @@ Route::get('/health', function () {
         'time' => now()->toISOString(),
     ]);
 })->name('api.health');
+ Route::post('/logout', [AuthController::class, 'logout'])->name('api.logout');
 
 // ROTAS AUTENTICADAS
 Route::middleware('auth:api')->group(function () {
-    Route::post('/logout', [AuthController::class, 'logout'])->name('api.logout');
+   
 
     Route::get('/user', function (Request $request) {
         return $request->user();

@@ -3,91 +3,72 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use Illuminate\Support\Str;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-
+use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
-   
+    public function login(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email',
+            'password' => 'required|min:6',
+        ]);
 
-public function login(Request $request)
-{
-    $credentials = $request->only('email', 'password');
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Dados inválidos.',
+                'errors' => $validator->errors()
+            ], 422);
+        }
 
-    if (Auth::attempt($credentials)) {
-        $user = Auth::user();
+        $credentials = $request->only('email', 'password');
         
-        // Criando o token de acesso usando Passport
-        $token = $user->createToken('api-token')->accessToken;
+        if (Auth::attempt($credentials)) {
+            $user = Auth::user();
+            $token = $user->createToken('api-token')->accessToken;
+            
+            return response()->json([
+                'success' => true,
+                'token' => $token,
+                'user' => $user,
+                'message' => 'Login realizado com sucesso!'
+            ]);
+        }
 
         return response()->json([
-            'token' => $token,
-            'user' => $user
+            'success' => false,
+            'message' => 'Credenciais inválidas. Verifique seu email e senha.'
+        ], 401);
+    }
+
+    public function logout(Request $request)
+    {
+        if (!auth()->user()) {
+            return response()->json([
+                'success' => false, 
+                'message' => 'Usuário já está deslogado.'
+            ]);
+        }
+
+        auth()->user()->token()->revoke();
+        
+        return response()->json([
+            'success' => true, 
+            'message' => 'Logout realizado com sucesso.'
         ]);
     }
 
-    return response()->json(['message' => 'Credenciais inválidas'], 401);
-}
-
-
-
-public function authPolicial(Request $request)
-{
-    Log::info('authPolicial chamado.', ['request_data' => $request->all()]);
-
-    $request->validate([
-        'email' => 'required|email',
-        'password' => 'required',
-    ]);
-
-    Log::info('Validação ok. Tentando autenticar usuário.', [
-        'email' => $request->input('email'),
-    ]);
-
-    if (!Auth::attempt($request->only('email', 'password'))) {
-        Log::warning('Falha na autenticação para o email: ' . $request->input('email'));
-        return response()->json(['success' => false, 'message' => 'Credenciais inválidas.'], 401);
+    public function user(Request $request)
+    {
+        return response()->json([
+            'success' => true,
+            'user' => $request->user()
+        ]);
     }
 
-    $user = Auth::user();
-
-    Log::info('Usuário autenticado com sucesso.', [
-        'user_id' => $user->id,
-        'email' => $user->email,
-    ]);
-
-    return response()->json([
-        'success' => true,
-        'user' => $user,
-    ]);
-}
-
-
-
-
-
-   
-
-
-    // Método para fazer logoutpublic function logout(Request $request)
-   
-    public function logout(Request $request)
-{
-    if (!auth()->user()) {
-        return response()->json(['success' => false, 'mensagem' => 'Usuário já está deslogado.']);
-    }
-
-    auth()->user()->token()->revoke();
-    return response()->json(['success' => true, 'mensagem' => 'Desconectado com sucesso.']);
-}
-
-
-
-    // Método para verificar se o usuário está autenticado
     public function check(Request $request)
     {
         return response()->json([

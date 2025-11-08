@@ -1,10 +1,13 @@
 <?php
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AuthController;
 
+// Se você ainda usa Blade tradicionais para outras páginas, mantenha-as ANTES do catch-all.
+
+// Catch-all da SPA (deixa por último)
 Route::get('/{any}', function () {
-    return view('app');
+    return view('app'); // resources/views/app.blade.php
 })->where('any', '.*');
+
 
 
 

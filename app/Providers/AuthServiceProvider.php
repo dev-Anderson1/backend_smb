@@ -16,6 +16,8 @@ class AuthServiceProvider extends ServiceProvider
         $this->registerPolicies();
 
         // Define o caminho das chaves OAuth (opcional se quiser personalizar)
-        Passport::loadKeysFrom(storage_path('oauth'));
+        //Passport::loadKeysFrom(storage_path('oauth'));
+         Passport::loadKeysFrom('/var/secure-keys'); 
+         //Passport::routes();
     }
 }

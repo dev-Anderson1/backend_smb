@@ -4,7 +4,9 @@ return [
     'supports_credentials' => true,
 
     'allowed_origins' => [
-        'http://localhost:3000', // O frontend React
+        'http://localhost:5173', // O frontend React
+        'http://localhost:8000', // O frontend React
+
     ],
 
     'allowed_methods' => [
